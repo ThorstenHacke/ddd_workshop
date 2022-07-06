@@ -7,15 +7,27 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class FileSystemRaumRepository implements RaumRepository {
-  get(raumNummer: RaumNummer): Raum {
-    const file = fs.readFileSync(`${raumNummer.raumNummer}.json`);
-
-    return JSON.parse(file.toString());
+  laden(raumNummer: RaumNummer): Raum | null {
+    try {
+      const file = fs.readFileSync(`${raumNummer.raumNummer}.json`);
+      return JSON.parse(file.toString());
+    } catch (error) {
+      return null;
+    }
   }
-  save(raum: Raum): void {
-    fs.writeFileSync(
-      `${raum.raumNummer.raumNummer}.json`,
-      JSON.stringify(raum)
-    );
+  speichern(raum: Raum): void {
+    try {
+      fs.writeFileSync(
+        `${raum.raumNummer.raumNummer}.json`,
+        JSON.stringify(raum)
+      );
+    } catch (error) {
+      throw Error(`Could not save room: ${error}`);
+    }
+  }
+
+  existiert(raumNummer: RaumNummer): boolean {
+    const raum = this.laden(raumNummer);
+    return !!raum;
   }
 }

@@ -4,7 +4,7 @@ export class RaumNummer {
 
   constructor(raumNummer: string) {
 
-    if (raumNummer?.match(/\d\d\d\d/)) {
+    if (!raumNummer.match(/\d\d\d\d/)) {
       throw new Error('Ungültige Länge');
     }
 
