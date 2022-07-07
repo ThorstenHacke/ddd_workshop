@@ -15,4 +15,8 @@ export class Raum {
   public personHinzufuegen(person: Person) {
     this.personen.push(person);
   }
+
+  public holePersonen() : string[]{
+    return this.personen.map(person => person.kurzschreibweise())
+  }
 }

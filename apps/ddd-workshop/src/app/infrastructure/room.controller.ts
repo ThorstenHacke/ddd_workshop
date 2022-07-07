@@ -12,12 +12,23 @@ import {
 import {
   erstelleRaum,
   ErstelleRaumErgebnis,
+} from '../application/erstelle-raum.use-case';
+import {
   personHinzufuegen,
-} from '../application/raum.use-cases';
+  PersonHinzufuegenErgebnis,
+} from '../application/person-hinzufuegen.use-case';
 import { Name } from '../domain/name.value-object';
-import { LDAPBenutzername, Nachname, Namenszusatz, Person, Titel, Vorname } from '../domain/person.entity';
+import {
+  LDAPBenutzername,
+  Nachname,
+  Namenszusatz,
+  Person,
+  Titel,
+  Vorname,
+} from '../domain/person.entity';
 import { RaumNummer } from '../domain/raumnummer.value-object';
 import { FileSystemRaumRepository } from './file-system-raum.repository';
+import { PersonDto } from './person.dto';
 import { RoomDto } from './room.dto';
 
 @Controller()
@@ -61,22 +72,42 @@ export class RoomController {
     }
   }
   @Put('/room/:id/person')
-  putPerson(@Param() params: { id: string }, @Body() person : any) {
-    console.log("🚀 ~ file: room.controller.ts ~ line 63 ~ RoomController ~ putPerson ~ person", person)
-    console.log("🚀 ~ file: room.controller.ts ~ line 63 ~ RoomController ~ putPerson ~ id", params.id)
+  putPerson(@Param() params: { id: string }, @Body() person: PersonDto) {
     const raumNummer = new RaumNummer(params.id);
     const vorname = new Vorname(person.firstname);
     const nachname = new Nachname(person.lastname);
     const ldapBenutzername = new LDAPBenutzername(person.ldapUser);
-    let titel
-    if(person.titel){
-      titel = new Titel(person.titel);
+    let titel: Titel;
+    let namenszusatz: Namenszusatz;
+    try {
+      titel = Titel.with(person.title);
+      namenszusatz = Namenszusatz.with(person.extension);
+    } catch (error) {
+      throw new HttpException(
+        `Validierung Fehlgeschloagen. ${error}`,
+        HttpStatus.BAD_REQUEST
+      );
     }
-    let namenszusatz;
-    if(person.extension){
-      namenszusatz = new Namenszusatz(person.extension);
+    const personEntity = new Person(
+      vorname,
+      nachname,
+      ldapBenutzername,
+      titel,
+      namenszusatz
+    );
+    const ergebnis = personHinzufuegen(
+      raumNummer,
+      personEntity,
+      this.fileSystemRaumRepository
+    );
+    switch (ergebnis) {
+      case PersonHinzufuegenErgebnis.RAUM_NICHT_VORHANDEN:
+        throw new HttpException('Raum nicht gefunden', HttpStatus.NOT_FOUND);
+      case PersonHinzufuegenErgebnis.BEREITS_IN_ANDEREM_RAUM:
+        throw new HttpException(
+          'Person bereits in anderem Raum',
+          HttpStatus.CONFLICT
+        );
     }
-    const personEntity = new Person(vorname, nachname, ldapBenutzername, titel, namenszusatz);
-    personHinzufuegen(raumNummer, personEntity, this.fileSystemRaumRepository);
   }
 }

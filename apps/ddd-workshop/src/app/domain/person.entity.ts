@@ -44,20 +44,32 @@ export class LDAPBenutzername {
 }
 export class Titel {
   public readonly titel: String;
-  constructor(titel: string) {
+  private constructor(titel: string) {
     if (titel !== 'Dr.') {
       throw new Error('Nicht valider Titel');
     }
     this.titel = titel;
   }
+  public static with (titel? : string): Titel|null{
+    if(!titel){
+      return null;
+    }
+    return new Titel(titel);
+  }
 }
 export class Namenszusatz {
   private readonly ZUSAETZE = ['von', 'van', 'de'];
   public readonly namenszusatz: string;
-  constructor(namenszusatz: string) {
+  private constructor(namenszusatz: string) {
     if (!this.ZUSAETZE.includes(namenszusatz)) {
       throw new Error('Invalider Namenszusatz');
     }
     this.namenszusatz = namenszusatz;
+  }
+  public static with(namenszusatz? : string) : Namenszusatz | null {
+    if(!namenszusatz){
+      return null;
+    }
+    return new Namenszusatz(namenszusatz);
   }
 }

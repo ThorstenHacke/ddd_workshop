@@ -9,7 +9,7 @@ export class RoomDto {
     return {
       name: raum.name.name,
       number: raum.raumNummer.raumNummer,
-      personen: raum.personen.map(person => person.kurzschreibweise()),
+      personen: raum.holePersonen(),
     };
   }
 }

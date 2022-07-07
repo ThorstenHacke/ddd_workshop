@@ -10,13 +10,17 @@ import { Person } from '../domain/person.entity';
 export class FileSystemRaumRepository implements RaumRepository {
   istPersonSchonEinemRaumZugeordnet(person: Person): boolean {
     const files =  fs.readdirSync("data/");
+    console.log("🚀 ~ file: file-system-raum.repository.ts ~ line 13 ~ FileSystemRaumRepository ~ istPersonSchonEinemRaumZugeordnet ~ files", files)
     return files.some((filename) => {
+      console.log("🚀 ~ file: file-system-raum.repository.ts ~ line 16 ~ FileSystemRaumRepository ~ returnfiles.some ~ filename", filename)
       if(!filename.endsWith("json")){
         return false;
       }
       const fileContent = fs.readFileSync(`data/${filename}`);
+      console.log("🚀 ~ file: file-system-raum.repository.ts ~ line 20 ~ FileSystemRaumRepository ~ returnfiles.some ~ fileContent", fileContent)
       const raum : Raum= JSON.parse(fileContent.toString());
-      if(raum.personen.some(exisingPerson => exisingPerson.ldapBenutzername === person.ldapBenutzername)){
+      console.log("🚀 ~ file: file-system-raum.repository.ts ~ line 22 ~ FileSystemRaumRepository ~ returnfiles.some ~ raum", raum)
+      if(raum.personen.some(exisingPerson => exisingPerson.ldapBenutzername.ldapBenutzername === person.ldapBenutzername.ldapBenutzername)){
         return true;
       }
       return false;
