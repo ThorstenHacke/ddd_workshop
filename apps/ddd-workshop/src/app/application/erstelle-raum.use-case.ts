@@ -1,7 +1,5 @@
-import { Name } from '../domain/name.value-object';
-import { Raum } from '../domain/raum.entity';
-import { RaumRepository } from '../domain/raum.repository';
-import { RaumNummer } from '../domain/raumnummer.value-object';
+import { Name, Raum, RaumNummer } from '../domain/raum/raum.entity';
+import { RaumRepository } from '../domain/raum/raum.repository';
 
 export function erstelleRaum(
   raumNummer: RaumNummer,

@@ -5,3 +5,6 @@ export interface PersonDto{
   lastname:string;
   ldapUser:string;
 }
+export interface AddPersonDto{
+  id:string;
+}

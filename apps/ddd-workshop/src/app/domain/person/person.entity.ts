@@ -1,9 +1,12 @@
+import { randomUUID } from "crypto";
+
 export class Person {
   public vorname: Vorname;
   public nachname: Nachname;
   public ldapBenutzername: LDAPBenutzername;
   public titel?: Titel;
   public namenszusatz?: Namenszusatz;
+  public id: PersonID;
   constructor(
     vorname: Vorname,
     nachname: Nachname,
@@ -11,6 +14,7 @@ export class Person {
     titel?: Titel,
     namenszusatz?: Namenszusatz
   ) {
+    this.id = PersonID.generate();
     this.vorname = vorname;
     this.nachname = nachname;
     this.ldapBenutzername = ldapBenutzername;
@@ -71,5 +75,18 @@ export class Namenszusatz {
       return null;
     }
     return new Namenszusatz(namenszusatz);
+  }
+}
+
+export class PersonID{
+  public readonly value: String;
+  private constructor(value: string) {
+    this.value = value;
+  }
+  static from(value: string){
+    return new PersonID(value);
+  }
+  static generate(): PersonID{
+    return new PersonID(randomUUID());
   }
 }

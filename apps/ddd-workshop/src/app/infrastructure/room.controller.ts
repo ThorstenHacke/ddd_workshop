@@ -13,27 +13,29 @@ import {
   erstelleRaum,
   ErstelleRaumErgebnis,
 } from '../application/erstelle-raum.use-case';
+import { holeRaumMitPersonen } from '../application/hole-raum-mit-personen.use-case';
 import {
   personHinzufuegen,
   PersonHinzufuegenErgebnis,
 } from '../application/person-hinzufuegen.use-case';
-import { Name } from '../domain/name.value-object';
 import {
   LDAPBenutzername,
   Nachname,
   Namenszusatz,
   Person,
+  PersonID,
   Titel,
   Vorname,
-} from '../domain/person.entity';
-import { RaumNummer } from '../domain/raumnummer.value-object';
+} from '../domain/person/person.entity';
+import { Name, RaumNummer } from '../domain/raum/raum.entity';
+import { FileSystemPersonRepository } from './file-system-person.repository';
 import { FileSystemRaumRepository } from './file-system-raum.repository';
-import { PersonDto } from './person.dto';
+import { AddPersonDto, PersonDto } from './person.dto';
 import { RoomDto } from './room.dto';
 
 @Controller()
 export class RoomController {
-  constructor(private fileSystemRaumRepository: FileSystemRaumRepository) {}
+  constructor(private fileSystemRaumRepository: FileSystemRaumRepository, private fileSystemPersonRepository : FileSystemPersonRepository) {}
 
   @Get('/room/:id')
   getRaum(@Param() params: { id: string }) {
@@ -44,16 +46,13 @@ export class RoomController {
     } catch (error) {
       throw new HttpException('Not valid room number', HttpStatus.BAD_REQUEST);
     }
+    const raumMitPersonen = holeRaumMitPersonen(this.fileSystemRaumRepository, this.fileSystemPersonRepository, roomNumber);
 
-    const existingRoom = this.fileSystemRaumRepository.laden(roomNumber);
-
-    if (!existingRoom) {
+    if (!raumMitPersonen) {
       throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
     }
 
-    const room = RoomDto.fromRaum(existingRoom);
-
-    return room;
+    return raumMitPersonen;
   }
 
   @Post('/room')
@@ -72,32 +71,11 @@ export class RoomController {
     }
   }
   @Put('/room/:id/person')
-  putPerson(@Param() params: { id: string }, @Body() person: PersonDto) {
+  putPerson(@Param() params: { id: string }, @Body() person: AddPersonDto) {
     const raumNummer = new RaumNummer(params.id);
-    const vorname = new Vorname(person.firstname);
-    const nachname = new Nachname(person.lastname);
-    const ldapBenutzername = new LDAPBenutzername(person.ldapUser);
-    let titel: Titel;
-    let namenszusatz: Namenszusatz;
-    try {
-      titel = Titel.with(person.title);
-      namenszusatz = Namenszusatz.with(person.extension);
-    } catch (error) {
-      throw new HttpException(
-        `Validierung Fehlgeschloagen. ${error}`,
-        HttpStatus.BAD_REQUEST
-      );
-    }
-    const personEntity = new Person(
-      vorname,
-      nachname,
-      ldapBenutzername,
-      titel,
-      namenszusatz
-    );
     const ergebnis = personHinzufuegen(
       raumNummer,
-      personEntity,
+      PersonID.from(person.id),
       this.fileSystemRaumRepository
     );
     switch (ergebnis) {

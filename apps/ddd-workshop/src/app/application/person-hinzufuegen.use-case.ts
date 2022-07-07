@@ -1,20 +1,17 @@
-import { Person } from "../domain/person.entity";
-import { RaumRepository } from "../domain/raum.repository";
-import { RaumNummer } from "../domain/raumnummer.value-object";
+import { PersonID } from "../domain/person/person.entity";
+import { RaumNummer } from "../domain/raum/raum.entity";
+import { RaumRepository } from "../domain/raum/raum.repository";
 
 export function personHinzufuegen(
   raumNummer: RaumNummer,
-  person: Person,
+  personID: PersonID,
   raumRepository: RaumRepository
 ): PersonHinzufuegenErgebnis {
   const raum = raumRepository.laden(raumNummer);
   if (!raum) {
     return PersonHinzufuegenErgebnis.RAUM_NICHT_VORHANDEN;
   }
-  if (raumRepository.istPersonSchonEinemRaumZugeordnet(person)) {
-    return PersonHinzufuegenErgebnis.BEREITS_IN_ANDEREM_RAUM;
-  }
-  raum.personHinzufuegen(person);
+  raum.personHinzufuegen(personID);
   raumRepository.speichern(raum);
   return PersonHinzufuegenErgebnis.OK;
 }
